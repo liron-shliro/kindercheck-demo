@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>KinderCheck · Little Village Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f3ed;--surface:#fff;--surface2:#f0ebe3;--border:#e4ddd2;
+  --text:#2c3a2e;--text2:#6b7c6e;--text3:#9ba89d;
+  --green:#5b8c5a;--green-soft:#e8f0e4;--green-dark:#3d6b3c;
+  --earth:#c4956a;--earth-soft:#fdf0e4;--earth-dark:#9e6f3f;
+  --red:#c0503a;--red-soft:#fce8e4;
+  --amber:#b8860b;--amber-soft:#fef6e4;
+  --radius:16px;--radius-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+h1{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:var(--green-dark)}
+h2{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;margin-bottom:4px}
+h3{font-size:16px;font-weight:700;margin-bottom:10px}
+.sub{color:var(--text2);font-size:13px}
+.note{color:var(--text3);font-size:12px;margin-top:6px}
+.stamp{font-size:11px;color:var(--text3);display:block;margin-top:4px}
+.mt{margin-top:12px}
+.empty{color:var(--text3);text-align:center;padding:40px 20px;font-size:14px}
+.hidden{display:none!important}
+
+/* Demo banner */
+#demo-banner{
+  background:var(--earth);color:#fff;text-align:center;
+  font-size:12px;font-weight:700;padding:10px 16px;letter-spacing:.3px;
+  position:sticky;top:0;z-index:200;
+}
+#demo-banner span{opacity:.85;font-weight:500}
+
+/* App shell */
+#app{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;overflow-x:hidden}
+
+/* Header */
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;
+  border-bottom:1px solid var(--border);background:var(--surface);
+  position:sticky;top:0;z-index:100}
+.hdr-left{display:flex;gap:12px;align-items:center}
+.logo{width:42px;height:42px;border-radius:13px;
+  background:linear-gradient(135deg,var(--green),var(--green-dark));
+  font-size:22px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(91,140,90,.3)}
+.rolesw{display:flex;background:var(--surface2);border-radius:var(--radius-sm);padding:3px}
+.rolesw button{border:none;background:none;padding:8px 14px;border-radius:8px;
+  font:600 13px 'Nunito',sans-serif;color:var(--text3);cursor:pointer;transition:.15s}
+.rolesw button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* Page */
+.page{padding:16px 20px 100px}
+
+/* Child cards (parent home) */
+.ccard{display:flex;justify-content:space-between;align-items:center;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;margin-bottom:12px;cursor:pointer;transition:transform .12s}
+.ccard:active{transform:scale(.98)}
+.ccard.status-in{border-left:4px solid var(--green)}
+.ccard.status-out{opacity:.65}
+.cc-left{display:flex;gap:12px;align-items:center}
+.cc-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.cc-times{font-size:12px;color:var(--text3);display:flex;gap:8px}
+.av{width:42px;height:42px;border-radius:50%;
+  background:linear-gradient(135deg,var(--earth-soft),var(--earth));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;flex-shrink:0}
+.av.lg{width:56px;height:56px;font-size:18px}
+.tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px}
+.tag.in{background:var(--green-soft);color:var(--green-dark)}
+.tag.out,.tag.away{background:var(--surface2);color:var(--text3)}
+.nbadge{background:var(--red);color:#fff;font-size:11px;font-weight:800;
+  width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+/* Detail header */
+.phead{display:flex;gap:14px;align-items:center;margin:14px 0 10px}
+
+/* Tab nav */
+.tnav{display:flex;gap:4px;overflow-x:auto;padding-bottom:14px;scrollbar-width:none}
+.tnav::-webkit-scrollbar{display:none}
+.tnav button{border:none;background:var(--surface2);padding:9px 16px;border-radius:999px;
+  font:600 13px 'Nunito',sans-serif;color:var(--text3);cursor:pointer;white-space:nowrap;flex-shrink:0}
+.tnav button.on{background:var(--green);color:#fff}
+
+/* Panel */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px}
+
+/* Activity feed */
+.arow{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)}
+.arow:last-child{border-bottom:0}
+.aicon{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:14px;flex-shrink:0;background:var(--surface2)}
+.aicon.checkin{background:var(--green-soft)}
+.aicon.checkout{background:var(--surface2)}
+.aicon.message{background:var(--earth-soft)}
+.aicon.report{background:var(--amber-soft)}
+.aicon.symptom{background:var(--red-soft)}
+.abody{flex:1}.abody p{font-size:14px;line-height:1.45}
+
+/* Report card */
+.rcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.ritem{display:flex;justify-content:space-between;align-items:flex-start;
+  padding:14px 18px;border-bottom:1px solid var(--border);gap:12px}
+.ritem:last-of-type{border-bottom:0}
+.rk{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);flex-shrink:0}
+.rv{text-align:right;font-size:14px;flex:1}
+.rcard .stamp{padding:8px 18px 14px}
+
+/* Weekly */
+.witem{padding:14px 0;border-bottom:1px solid var(--border)}
+.witem:last-child{border-bottom:0}
+.wtag{display:inline-block;background:var(--earth-soft);color:var(--earth-dark);
+  font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px;margin-bottom:6px}
+.witem p{font-size:14px;line-height:1.5;margin:4px 0}
+
+/* MC rows */
+.mcrow{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;margin-top:10px}
+.mcrow strong{color:var(--earth-dark);font-size:14px;display:block}
+.mcrow span{font-size:13px;color:var(--text2)}
+
+/* Announcements */
+.annrow{background:var(--surface2);border-radius:var(--radius-sm);padding:14px;margin-top:12px}
+.annrow strong{font-size:15px;color:var(--green-dark);display:block;margin-bottom:4px}
+.annrow p{font-size:13px;color:var(--text2);line-height:1.5}
+
+/* Teacher queue rows */
+.qrow{display:flex;align-items:center;gap:14px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+.qinfo{flex:1;display:flex;flex-direction:column}
+.qinfo strong{font-size:15px}
+.qacts{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.hflag{margin-left:6px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+.hflag.pickup,.hflag.urgent{background:var(--red-soft);color:var(--red)}
+.hflag.monitor{background:var(--amber-soft);color:var(--amber)}
+
+/* Dashboard stats */
+.statrow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.scard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+.snum{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;display:block}
+.slbl{font-size:12px;color:var(--text3)}
+
+/* Log table */
+.logtable{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px}
+.logrow{display:grid;grid-template-columns:1.4fr .8fr .6fr .8fr 1fr;padding:11px 14px;border-bottom:1px solid var(--border);font-size:12px}
+.logrow.head{background:var(--surface2);font-size:10px;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.5px}
+.logrow:last-child{border-bottom:0}
+.logname{font-weight:600}
+.hot{color:var(--red);font-weight:700}
+
+/* Buttons */
+.btn{border:none;border-radius:var(--radius-sm);padding:12px 20px;
+  font:700 14px 'Nunito',sans-serif;cursor:pointer;transition:transform .1s;display:inline-block}
+.btn:active{transform:scale(.96)}
+.btn.pri{background:var(--green);color:#fff}
+.btn.sec{background:var(--text);color:#fff}
+.btn.ghost{background:var(--surface2);color:var(--text2)}
+.btn.sm{padding:8px 14px;font-size:13px}
+.btn.full{width:100%;text-align:center;margin-top:10px}
+.link-btn{background:none;border:none;color:var(--green);
+  font:600 14px 'Nunito',sans-serif;cursor:pointer;text-decoration:underline;
+  text-underline-offset:2px;padding:4px 0}
+.link-btn.sm{font-size:12px}
+.back-btn{background:none;border:none;color:var(--green);
+  font:600 14px 'Nunito',sans-serif;cursor:pointer;margin-bottom:14px;padding:4px 0}
+
+/* Form fields */
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--text2);
+  margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.inp{border:1px solid var(--border);background:var(--surface);
+  border-radius:var(--radius-sm);padding:12px 14px;
+  font:500 15px 'Nunito',sans-serif;width:100%;color:var(--text)}
+.inp:focus{outline:2px solid var(--green);outline-offset:-1px}
+.inp.fever{border-color:var(--red);background:var(--red-soft)}
+textarea.inp{resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.warn{color:var(--red);font-size:13px;font-weight:600;margin-top:6px}
+.err-msg{color:var(--red);font-size:14px;font-weight:600;margin-bottom:12px}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{border:1px solid var(--border);background:var(--surface);border-radius:999px;
+  padding:8px 16px;font:600 13px 'Nunito',sans-serif;color:var(--text2);cursor:pointer}
+.chip.on{background:var(--green);color:#fff;border-color:var(--green)}
+.chip.alert-on{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* Segmented control */
+.segrow{display:flex;gap:8px;margin-top:4px}
+.seg{flex:1;border:1px solid var(--border);background:var(--surface);
+  border-radius:var(--radius-sm);padding:10px;
+  font:600 14px 'Nunito',sans-serif;color:var(--text2);cursor:pointer;text-align:center}
+.seg.on{background:var(--green);color:#fff;border-color:var(--green)}
+
+/* Severity grid */
+.sevrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sevbtn{border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);
+  padding:10px 6px;cursor:pointer;text-align:center;width:100%}
+.sevbtn .sicon{font-size:20px;display:block;margin-bottom:2px}
+.sevbtn strong{font-size:12px;display:block}
+.sevbtn .shint{font-size:10px;color:var(--text3);display:block}
+.sevbtn.on-monitor{background:var(--amber-soft);border-color:var(--amber)}
+.sevbtn.on-pickup,.sevbtn.on-urgent{background:var(--red-soft);border-color:var(--red)}
+
+/* Overlay / bottom sheet */
+.overlay{position:fixed;inset:0;background:rgba(44,58,46,.5);
+  display:flex;align-items:flex-end;justify-content:center;z-index:150;
+  animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.sheet{background:var(--bg);border-radius:24px 24px 0 0;padding:12px 24px 40px;
+  width:100%;max-width:430px;max-height:88vh;overflow-y:auto;
+  animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(50%)}to{transform:translateY(0)}}
+.sheet-handle{width:40px;height:4px;border-radius:2px;background:var(--border);margin:0 auto 18px}
+.sheet-head{margin-bottom:20px}
+.sheet-head .label{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:1.5px;color:var(--green);display:block;margin-bottom:4px}
+.sheet-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.alertbox{background:var(--amber-soft);border:1px solid var(--amber);
+  border-radius:var(--radius-sm);padding:14px;margin-bottom:16px}
+.alertbox label{color:var(--amber)}
+
+/* Thread */
+.thread{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;height:440px}
+.msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.bubble{max-width:80%;background:var(--surface2);padding:10px 14px;
+  border-radius:16px 16px 16px 4px;align-self:flex-start}
+.bubble.mine{align-self:flex-end;background:var(--green-soft);border-radius:16px 16px 4px 16px}
+.bwho{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--earth);display:block}
+.bubble p{margin:3px 0;font-size:14px;line-height:1.4}
+.btime{font-size:10px;color:var(--text3)}
+.compose{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border);align-items:center}
+.compose .inp{flex:1;padding:10px 12px}
+
+/* Loading */
+.loading{display:flex;gap:8px;justify-content:center;align-items:center;height:60vh}
+.ldot{width:10px;height:10px;border-radius:50%;background:var(--green);
+  animation:bounce .6s alternate infinite}
+.ldot:nth-child(2){animation-delay:.15s}.ldot:nth-child(3){animation-delay:.3s}
+@keyframes bounce{to{transform:translateY(-12px);opacity:.4}}
+
+@media(max-width:380px){
+  .row2{grid-template-columns:1fr}
+  .sevrow{grid-template-columns:1fr}
+  .logrow{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="demo-banner">
+  🌿 DEMO PROTOTYPE &nbsp;<span>· Concept demo for Little Village on the Grange — not a live product ·</span>
+</div>
+<div id="app"><div class="loading"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div></div></div>
+
+<script>
+// ── Utilities ──────────────────────────────────────────────────────
+const uid  = () => Math.random().toString(36).slice(2,9);
+const fmt  = d => d ? new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '—';
+const fmtDT= d => d ? new Date(d).toLocaleString([],{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+const today= () => new Date().toISOString().slice(0,10);
+const h    = (tag, attrs={}, ...kids) => {
+  const el = document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs)){
+    if(k==='class') el.className=v;
+    else if(k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(),v);
+    else el.setAttribute(k,v);
+  }
+  for(const kid of kids.flat(9)){
+    if(kid==null||kid===false) continue;
+    el.appendChild(typeof kid==='string'||typeof kid==='number' ? document.createTextNode(kid) : kid);
+  }
+  return el;
+};
+const div  = (cls,...kids) => h('div',{class:cls},...kids);
+const p    = (cls,txt)    => h('p',{class:cls},txt);
+const btn  = (cls,txt,cb) => h('button',{class:'btn '+cls,onClick:cb},txt);
+const lbtn = (cls,txt,cb) => h('button',{class:'link-btn '+cls,onClick:cb},txt);
+
+// ── LocalStorage (with in-memory fallback if blocked) ──────────────
+const memFallback = {};
+let storageWorks = true;
+try { localStorage.setItem('kc:__test__','1'); localStorage.removeItem('kc:__test__'); } catch { storageWorks = false; }
+
+const store = {
+  get:(k,fb)=>{
+    if(!storageWorks) return (k in memFallback) ? memFallback[k] : fb;
+    try{ const v=localStorage.getItem(k); return v?JSON.parse(v):fb; }catch{ return (k in memFallback) ? memFallback[k] : fb; }
+  },
+  set:(k,v)=>{
+    memFallback[k]=v;
+    if(!storageWorks) return;
+    try{ localStorage.setItem(k,JSON.stringify(v)); }catch{}
+  }
+};
+
+// ── State ─────────────────────────────────────────────────────────
+const STATE = {
+  role:'parent', tab:'queue', activeChild:null, pTab:'activity',
+  chatAs:'parent', children:[], records:{}, reports:{}, weekly:{},
+  messages:{}, mc:{}, notifs:{}, health:{}, ann:[],
+};
+function get(k){ return STATE[k]; }
+function set(k,v){ STATE[k]=v; }
+
+const persist = (key,val,stateKey) => { set(stateKey,val); store.set(key,val); };
+const notify  = (childId,kind,text) => {
+  const n={id:uid(),kind,text,at:new Date().toISOString(),read:false};
+  const cur=get('notifs');
+  cur[childId]=[n,...(cur[childId]||[])];
+  persist('kc:notifs',cur,'notifs');
+};
+
+// ── Seed data ─────────────────────────────────────────────────────
+const CHILDREN = [
+  {id:'c1', name:'Mia Tan',      cls:'Explorer 1',   guardian:'Wei Tan'},
+  {id:'c2', name:'Noah Lim',     cls:'Explorer 2',   guardian:'Sarah Lim'},
+  {id:'c3', name:'Aria Chen',    cls:'Adventures 1', guardian:'David Chen'},
+  {id:'c4', name:'Leo Kumar',    cls:'Adventures 2', guardian:'Priya Kumar'},
+  {id:'c5', name:'Zoe Wong',     cls:'Discovery 1',  guardian:'Jenny Wong'},
+  {id:'c6', name:'Ethan Ng',     cls:'Discovery 2',  guardian:'Michael Ng'},
+  {id:'c7', name:'Sophie Lee',   cls:'K1',            guardian:'Rachel Lee'},
+  {id:'c8', name:'Lucas Ong',    cls:'K2',            guardian:'Daniel Ong'},
+  {id:'c9', name:'Isla Tan',     cls:'Explorer 1',   guardian:'James Tan'},
+  {id:'c10',name:'Ryan Goh',     cls:'Explorer 2',   guardian:'Linda Goh'},
+  {id:'c11',name:'Chloe Yeo',    cls:'Adventures 1', guardian:'Thomas Yeo'},
+  {id:'c12',name:'Marcus Raj',   cls:'Adventures 2', guardian:'Sunita Raj'},
+  {id:'c13',name:'Ava Chua',     cls:'Discovery 1',  guardian:'Henry Chua'},
+  {id:'c14',name:'Jayden Teo',   cls:'K1',            guardian:'Grace Teo'},
+  {id:'c15',name:'Emma Seow',    cls:'K2',            guardian:'Patrick Seow'},
+];
+
+function seedDemo(){
+  const date=today();
+  if(store.get('kc:seeded-v2-'+date,false)) return;
+  const t=(h,m)=>{const d=new Date();d.setHours(h,m,0,0);return d.toISOString();};
+  const rec={[date]:{
+    c1:{inAt:t(8,10),temp:36.4,inBy:'Mum'},
+    c2:{inAt:t(8,22),temp:36.7,inBy:'Dad'},
+    c3:{inAt:t(8,30),temp:37.9,inBy:'Helper'},
+    c4:{inAt:t(8,5), temp:36.5,inBy:'Grandparent',outAt:t(14,45),outBy:'Dad'},
+    c7:{inAt:t(8,18),temp:36.3,inBy:'Mum'},
+  }};
+  store.set('kc:records',rec);
+  store.set('kc:reports',{[date]:{c1:{napped:true,napMins:'75',lunchTime:'12:00',lunchPortion:'Most',bmCount:'1',bmTime:'14:30',notes:'Mia was very engaged during art today — she painted a forest scene and told us a story about each tree. Cheerful mood all day.',updatedAt:t(15,45)}}});
+  store.set('kc:health',{c3:[{symptoms:['Fever','Lethargic'],temp:37.9,severity:'pickup',notes:'Warm to touch, low energy. Called parent at 9:15am.',context:'checkin',at:t(8,35)}]});
+  store.set('kc:messages',{c1:[{id:uid(),from:'teacher',text:"Hi Wei — just a quick note to let you know Mia had a wonderful day. She's been really confident speaking up during circle time this week! 🌿",at:t(15,50)}]});
+  store.set('kc:notifs',{
+    c1:[{id:uid(),kind:'checkin',text:'Checked in at 8:10am by Mum · 36.4°C',at:t(8,10),read:false},{id:uid(),kind:'report',text:'Daily report posted — lunch 12:00, napped 75 min',at:t(15,45),read:false},{id:uid(),kind:'message',text:'Teacher: "Hi Wei — just a quick note to let you know Mia had a wonderful day…"',at:t(15,50),read:false}],
+    c2:[{id:uid(),kind:'checkin',text:'Checked in at 8:22am by Dad · 36.7°C',at:t(8,22),read:false}],
+    c3:[{id:uid(),kind:'checkin',text:'Checked in at 8:30am by Helper · 37.9°C',at:t(8,30),read:false},{id:uid(),kind:'symptom',text:'Health alert (Needs pickup) — Fever, Lethargic · 37.9°C',at:t(8,35),read:false}],
+    c4:[{id:uid(),kind:'checkin',text:'Checked in at 8:05am by Grandparent · 36.5°C',at:t(8,5),read:false},{id:uid(),kind:'checkout',text:'Checked out at 2:45pm by Dad',at:t(14,45),read:false}],
+    c7:[{id:uid(),kind:'checkin',text:'Checked in at 8:18am by Mum · 36.3°C',at:t(8,18),read:false}],
+  });
+  store.set('kc:ann',[
+    {id:uid(),title:'National Day 2026 — Celebrating Singapore Through Our Families',
+     body:'Dear Mums and Dads, we are excited to share our plans for our National Day Celebration 2026. The event will take place on Friday, 7 August 2026 — a half-day event from 8:30am to 12:00pm. This year our celebration centres around the National Day theme Majulah Singapura (Onward Singapore), which encourages us to reflect on how we move forward together as one nation while valuing the contributions of every individual and community. Children will explore cultural traditions, participate in games and activities, create collaborative artwork, and spend meaningful time with their families. We look forward to celebrating together!',
+     at:t(6,55)},
+    {id:uid(),title:'Parent-Teacher Conference — Saturday 13 June 2026',
+     body:'We are looking forward to meeting with you at the upcoming Parent-Teacher Conference. Date & Time: Saturday, 13 June 2026, 10:30am–10:45am. Location: Explorer 2 Classroom. Each session has been allocated a 15-minute slot to allow sufficient time for meaningful dialogue while ensuring fairness to all families. We deeply value your punctuality. We are pleased to share the English portfolio for your child, highlighting their learning journey so far. Please note the Chinese portfolio is in its final stages of review and will be sent to you as soon as it is ready — we sincerely apologise for the delay and are happy to arrange an additional meeting to discuss it in further detail. Thank you for your continued partnership.',
+     link:'https://littlevillagesg-my.sharepoint.com/personal/enquiries_littlevillage_com_sg/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fenquiries%5Flittlevillage%5Fcom%5Fsg%2FDocuments%2F1%2E%20Teachers%20Folder%2F2026%20Teacher%27s%20Folder%2FClass%20Folder%2F09%2E%20Explorers%202%2FEmail%20Attachments%2FOri&viewid=f1aea40e%2D467d%2D4cff%2D97a0%2D09ee8b5b9751&sharingv2=true&fromShare=true&at=9',
+     linkLabel:'View English Portfolio →',
+     at:t(7,0)},
+  ]);
+  store.set('kc:weekly',{c1:[{week:'W25',text:'A wonderful week for Mia. She led a small-group investigation into how plants grow — planted seeds, measured soil, and made predictions. Socially she has been very inclusive.',at:t(16,0)}]});
+  store.set('kc:seeded-v2-'+date,true);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+const initials = name => name.split(' ').map(n=>n[0]).join('');
+const avEl     = (name,lg=false) => div(`av${lg?' lg':''}`,initials(name));
+const childState= id => {
+  const r=(get('records')[today()]||{})[id]||{};
+  return r.outAt?'out':r.inAt?'in':'away';
+};
+const unreadCount = id => (get('notifs')[id]||[]).filter(n=>!n.read).length;
+
+// ── Overlay ───────────────────────────────────────────────────────
+let overlayEl=null;
+function showOverlay(content){
+  closeOverlay();
+  overlayEl=div('overlay');
+  const sheet=div('sheet');
+  overlayEl.addEventListener('click',e=>{ if(e.target===overlayEl) closeOverlay(); });
+  sheet.appendChild(div('sheet-handle'));
+  sheet.appendChild(content);
+  overlayEl.appendChild(sheet);
+  document.getElementById('app').appendChild(overlayEl);
+}
+function closeOverlay(){ overlayEl?.remove(); overlayEl=null; }
+
+// ── Check-in / Check-out modal ────────────────────────────────────
+function showConfirmModal(childId,type){
+  const child=CHILDREN.find(c=>c.id===childId);
+  const isIn=type==='in';
+  let tempVal='', roleVal='', otherVal='';
+  const ROLES=['Mum','Dad','Grandparent','Helper','Other (special permission)'];
+  const wrap=div('');
+  const head=div('sheet-head');
+  head.appendChild(h('span',{class:'label'},isIn?'Drop-off':'Pick-up'));
+  head.appendChild(h('h2',{},child.name));
+  head.appendChild(p('sub',`${child.cls} · ${fmt(new Date().toISOString())}`));
+  wrap.appendChild(head);
+
+  // Temperature
+  if(isIn){
+    const fld=div('field');
+    fld.appendChild(h('label',{},'Temperature (°C)'));
+    const inp=h('input',{class:'inp',type:'number',step:'0.1',inputmode:'decimal',placeholder:'36.5'});
+    const warn=p('warn hidden','⚠ Elevated — escalate before admitting');
+    const logSympBtn=lbtn('sm','🩺 Log symptoms',()=>{ closeOverlay(); showSymptomModal(childId,'checkin'); });
+    logSympBtn.style.marginTop='8px';
+    inp.addEventListener('input',()=>{
+      tempVal=inp.value;
+      const t=parseFloat(tempVal);
+      inp.className=(!isNaN(t)&&t>=37.8)?'inp fever':'inp';
+      warn.classList.toggle('hidden',isNaN(t)||t<37.8);
+    });
+    fld.appendChild(inp); fld.appendChild(warn); fld.appendChild(logSympBtn);
+    wrap.appendChild(fld);
+  }
+
+  // Role chips
+  const roleFld=div('field');
+  roleFld.appendChild(h('label',{},`Who is ${isIn?'dropping off':'collecting'}?`));
+  const chips=div('chips');
+  ROLES.forEach(r=>{
+    const c=h('button',{class:'chip'},r);
+    c.addEventListener('click',()=>{
+      roleVal=r; chips.querySelectorAll('.chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
+      otherBox.classList.toggle('hidden',r!=='Other (special permission)');
+    });
+    chips.appendChild(c);
+  });
+  roleFld.appendChild(chips); wrap.appendChild(roleFld);
+
+  // Other box
+  const otherBox=div('field alertbox hidden');
+  otherBox.appendChild(h('label',{},'Person & reason'));
+  const otherInp=h('input',{class:'inp',placeholder:'e.g. Jane Tan (aunt), called at 2pm'});
+  otherInp.addEventListener('input',()=>otherVal=otherInp.value);
+  otherBox.appendChild(otherInp); wrap.appendChild(otherBox);
+
+  // Error
+  const errEl=p('err-msg hidden','');
+  wrap.appendChild(errEl);
+
+  // Actions
+  const actions=div('sheet-actions');
+  actions.appendChild(btn('ghost','Cancel',closeOverlay));
+  actions.appendChild(btn('pri',`Confirm ${isIn?'check-in':'check-out'}`,()=>{
+    const t=parseFloat(tempVal);
+    if(isIn&&(isNaN(t)||t<34||t>43)){ errEl.textContent='Valid temperature required.'; errEl.classList.remove('hidden'); return; }
+    if(!roleVal){ errEl.textContent='Select who is '+( isIn?'dropping off':'collecting')+'.'; errEl.classList.remove('hidden'); return; }
+    if(roleVal==='Other (special permission)'&&!otherVal.trim()){ errEl.textContent='Name & reason required.'; errEl.classList.remove('hidden'); return; }
+    // Save
+    const by=roleVal==='Other (special permission)'?`Other: ${otherVal.trim()}`:roleVal;
+    const recs=get('records'); const date=today();
+    if(!recs[date]) recs[date]={};
+    const ex=recs[date][childId]||{};
+    if(isIn) recs[date][childId]={...ex,inAt:new Date().toISOString(),temp:isIn?t:null,inBy:by};
+    else recs[date][childId]={...ex,outAt:new Date().toISOString(),outBy:by};
+    persist('kc:records',recs,'records');
+    const stamp=fmt(new Date().toISOString());
+    if(isIn) notify(childId,'checkin',`Checked in at ${stamp} by ${by}${t?` · ${t}°C`:''}`);
+    else notify(childId,'checkout',`Checked out at ${stamp} by ${by}`);
+    closeOverlay(); render();
+  }));
+  wrap.appendChild(actions);
+  showOverlay(wrap);
+}
+
+// ── Symptom modal ─────────────────────────────────────────────────
+function showSymptomModal(childId,context){
+  const child=CHILDREN.find(c=>c.id===childId);
+  const SYMS=['Fever','Cough','Runny nose','Rash','Vomiting','Diarrhoea','Eye discharge','Lethargic','No appetite','Sore throat'];
+  const SEVS=[{key:'monitor',label:'Monitor',icon:'👁',hint:'Keep watch'},{key:'pickup',label:'Needs pickup',icon:'📞',hint:'Call parent'},{key:'urgent',label:'Urgent',icon:'🚨',hint:'Immediate'}];
+  let picked=[], sevVal='', notesVal='', tempVal='';
+  const wrap=div('');
+  const head=div('sheet-head');
+  head.appendChild(h('span',{class:'label'},'Symptom log'));
+  head.appendChild(h('h2',{},child.name));
+  wrap.appendChild(head);
+
+  const symFld=div('field');
+  symFld.appendChild(h('label',{},'Symptoms'));
+  const chips=div('chips');
+  SYMS.forEach(s=>{
+    const c=h('button',{class:'chip'},s);
+    c.addEventListener('click',()=>{
+      if(picked.includes(s)) picked=picked.filter(x=>x!==s),c.classList.remove('alert-on','on');
+      else picked.push(s),c.classList.add('alert-on');
+    });
+    chips.appendChild(c);
+  });
+  symFld.appendChild(chips); wrap.appendChild(symFld);
+
+  const tmpFld=div('field');
+  tmpFld.appendChild(h('label',{},'Temperature (optional)'));
+  const tmpInp=h('input',{class:'inp',type:'number',step:'0.1',inputmode:'decimal',placeholder:'38.2'});
+  tmpInp.addEventListener('input',()=>tempVal=tmpInp.value);
+  tmpFld.appendChild(tmpInp); wrap.appendChild(tmpFld);
+
+  const sevFld=div('field');
+  sevFld.appendChild(h('label',{},'Severity'));
+  const sevRow=div('sevrow');
+  SEVS.forEach(s=>{
+    const b=h('button',{class:'sevbtn'});
+    b.innerHTML=`<span class="sicon">${s.icon}</span><strong>${s.label}</strong><span class="shint">${s.hint}</span>`;
+    b.addEventListener('click',()=>{ sevVal=s.key; sevRow.querySelectorAll('.sevbtn').forEach(x=>x.className='sevbtn'); b.classList.add(`on-${s.key}`); });
+    sevRow.appendChild(b);
+  });
+  sevFld.appendChild(sevRow); wrap.appendChild(sevFld);
+
+  const notesFld=div('field');
+  notesFld.appendChild(h('label',{},'Notes'));
+  const notesInp=h('textarea',{class:'inp',rows:'2',placeholder:'What you observed…'});
+  notesInp.addEventListener('input',()=>notesVal=notesInp.value);
+  notesFld.appendChild(notesInp); wrap.appendChild(notesFld);
+
+  const errEl=p('err-msg hidden','');
+  wrap.appendChild(errEl);
+
+  const actions=div('sheet-actions');
+  actions.appendChild(btn('ghost','Cancel',closeOverlay));
+  actions.appendChild(btn('pri','Save & notify parent',()=>{
+    if(!picked.length&&!notesVal.trim()){ errEl.textContent='Select symptoms or add notes.'; errEl.classList.remove('hidden'); return; }
+    if(!sevVal){ errEl.textContent='Select severity.'; errEl.classList.remove('hidden'); return; }
+    const entry={symptoms:picked,temp:tempVal?parseFloat(tempVal):null,severity:sevVal,notes:notesVal.trim(),context,at:new Date().toISOString()};
+    const hl=get('health');
+    hl[childId]=[entry,...(hl[childId]||[])];
+    persist('kc:health',hl,'health');
+    const sevLabel=SEVS.find(s=>s.key===sevVal).label;
+    notify(childId,'symptom',`Health alert (${sevLabel}) — ${picked.join(', ')||'noted'}${entry.temp?` · ${entry.temp}°C`:''}`);
+    closeOverlay(); render();
+  }));
+  wrap.appendChild(actions);
+  showOverlay(wrap);
+}
+
+// ── Report modal ──────────────────────────────────────────────────
+function showReportModal(childId){
+  const child=CHILDREN.find(c=>c.id===childId);
+  const existing=(get('reports')[today()]||{})[childId]||{};
+  let r={napped:false,napMins:'',lunchTime:'',lunchPortion:'All',bmCount:'0',bmTime:'',notes:'',...existing};
+  const wrap=div('');
+  const head=div('sheet-head');
+  head.appendChild(h('span',{class:'label'},`Daily report · ${today()}`));
+  head.appendChild(h('h2',{},child.name));
+  wrap.appendChild(head);
+
+  // Nap
+  const napFld=div('field');
+  napFld.appendChild(h('label',{},'Nap'));
+  const segrow=div('segrow');
+  const napY=h('button',{class:r.napped?'seg on':'seg'},'Napped');
+  const napN=h('button',{class:!r.napped?'seg on':'seg'},'No nap');
+  const napDur=h('input',{class:'inp mt',type:'number',placeholder:'Minutes (e.g. 90)',value:r.napMins||(r.napped?'':'')});
+  napDur.style.marginTop='8px';
+  napDur.classList.toggle('hidden',!r.napped);
+  napDur.addEventListener('input',()=>r.napMins=napDur.value);
+  napY.addEventListener('click',()=>{ r.napped=true; napY.className='seg on'; napN.className='seg'; napDur.classList.remove('hidden'); });
+  napN.addEventListener('click',()=>{ r.napped=false; napN.className='seg on'; napY.className='seg'; napDur.classList.add('hidden'); });
+  segrow.appendChild(napY); segrow.appendChild(napN);
+  napFld.appendChild(segrow); napFld.appendChild(napDur);
+  wrap.appendChild(napFld);
+
+  // Lunch
+  const r2a=div('row2');
+  const ltFld=div('field'); ltFld.appendChild(h('label',{},'Lunch time'));
+  const ltInp=h('input',{class:'inp',type:'time',value:r.lunchTime||''});
+  ltInp.addEventListener('input',()=>r.lunchTime=ltInp.value);
+  ltFld.appendChild(ltInp); r2a.appendChild(ltFld);
+  const lpFld=div('field'); lpFld.appendChild(h('label',{},'Portion'));
+  const lpSel=h('select',{class:'inp'});
+  ['All','Most','Half','A little','Refused'].forEach(opt=>{ const o=h('option',{},opt); if(opt===r.lunchPortion) o.selected=true; lpSel.appendChild(o); });
+  lpSel.addEventListener('change',()=>r.lunchPortion=lpSel.value);
+  lpFld.appendChild(lpSel); r2a.appendChild(lpFld);
+  wrap.appendChild(r2a);
+
+  // Bowel
+  const r2b=div('row2');
+  const bmFld=div('field'); bmFld.appendChild(h('label',{},'Bowel movements'));
+  const bmInp=h('input',{class:'inp',type:'number',min:'0',value:r.bmCount||'0'});
+  bmInp.addEventListener('input',()=>r.bmCount=bmInp.value);
+  bmFld.appendChild(bmInp); r2b.appendChild(bmFld);
+  const btFld=div('field'); btFld.appendChild(h('label',{},'Time'));
+  const btInp=h('input',{class:'inp',type:'time',value:r.bmTime||''});
+  btInp.addEventListener('input',()=>r.bmTime=btInp.value);
+  btFld.appendChild(btInp); r2b.appendChild(btFld);
+  wrap.appendChild(r2b);
+
+  // Notes
+  const notesFld=div('field'); notesFld.appendChild(h('label',{},'Updates for parent'));
+  const notesInp=h('textarea',{class:'inp',rows:'3',placeholder:'Mood, activities, anything to flag…'});
+  notesInp.value=r.notes||'';
+  notesInp.addEventListener('input',()=>r.notes=notesInp.value);
+  notesFld.appendChild(notesInp); wrap.appendChild(notesFld);
+
+  const actions=div('sheet-actions');
+  actions.appendChild(btn('ghost','Cancel',closeOverlay));
+  actions.appendChild(btn('pri','Save & send',()=>{
+    const reps=get('reports'); const date=today();
+    if(!reps[date]) reps[date]={};
+    reps[date][childId]={...r,updatedAt:new Date().toISOString()};
+    persist('kc:reports',reps,'reports');
+    notify(childId,'report','Daily report posted');
+    closeOverlay(); render();
+  }));
+  wrap.appendChild(actions);
+  showOverlay(wrap);
+}
+
+// ── Views ─────────────────────────────────────────────────────────
+const NOTIF_ICON={checkin:'→',checkout:'←',report:'🍽',message:'💬',symptom:'🩺',weekly:'📋'};
+
+function renderParentHome(){
+  const pg=div('page');
+  pg.appendChild(p('sub mt','Tap your child to see today\'s updates.'));
+  pg.appendChild(div(''));
+
+  CHILDREN.forEach(ch=>{
+    const st=childState(ch.id);
+    const r=(get('records')[today()]||{})[ch.id]||{};
+    const un=unreadCount(ch.id);
+    const card=div(`ccard status-${st}`);
+    const left=div('cc-left');
+    left.appendChild(avEl(ch.name));
+    const info=div('');
+    info.appendChild(h('strong',{},ch.name));
+    info.appendChild(p('sub',ch.cls));
+    left.appendChild(info);
+    card.appendChild(left);
+    const right=div('cc-right');
+    right.appendChild(h('span',{class:`tag ${st}`},st==='in'?'In school':st==='out'?'Picked up':'—'));
+    const times=div('cc-times');
+    times.appendChild(h('span',{},'In '+fmt(r.inAt)));
+    times.appendChild(h('span',{},'Out '+fmt(r.outAt)));
+    right.appendChild(times);
+    if(un>0) right.appendChild(div('nbadge',String(un)));
+    card.appendChild(right);
+    card.addEventListener('click',()=>{ set('activeChild',ch); set('pTab','activity');
+      const ns=get('notifs'); if(ns[ch.id]) ns[ch.id]=ns[ch.id].map(n=>({...n,read:true})); persist('kc:notifs',ns,'notifs');
+      render(); });
+    pg.appendChild(card);
+  });
+  return pg;
+}
+
+function renderParentDetail(){
+  const ch=get('activeChild');
+  const pg=div('page');
+  const back=h('button',{class:'back-btn',onClick:()=>{ set('activeChild',null); render(); }},'← All children');
+  pg.appendChild(back);
+  const phead=div('phead');
+  phead.appendChild(avEl(ch.name,true));
+  const inf=div(''); inf.appendChild(h('h2',{},ch.name)); inf.appendChild(p('sub',ch.cls));
+  phead.appendChild(inf); pg.appendChild(phead);
+
+  const TABS=[['activity','Activity'],['daily','Daily'],['weekly','Weekly'],['announce','News'],['chat','Chat'],['mc','MC']];
+  const tnav=div('tnav');
+  TABS.forEach(([t,lbl])=>{
+    const b=h('button',{class:get('pTab')===t?'on':''},lbl);
+    b.addEventListener('click',()=>{ set('pTab',t); render(); });
+    tnav.appendChild(b);
+  });
+  pg.appendChild(tnav);
+
+  const pt=get('pTab');
+  if(pt==='activity'){
+    const panel=div('panel');
+    const notifs=(get('notifs')[ch.id]||[]);
+    if(!notifs.length){ panel.appendChild(p('empty','No activity yet.')); }
+    else notifs.forEach(n=>{
+      const row=div('arow');
+      row.appendChild(div(`aicon ${n.kind}`,NOTIF_ICON[n.kind]||'•'));
+      const body=div('abody'); body.appendChild(p('',n.text)); body.appendChild(h('span',{class:'stamp'},fmtDT(n.at)));
+      row.appendChild(body); panel.appendChild(row);
+    });
+    pg.appendChild(panel);
+  }
+  else if(pt==='daily'){
+    const rep=(get('reports')[today()]||{})[ch.id];
+    if(!rep){ pg.appendChild(p('empty','No report posted yet today.')); }
+    else {
+      const card=div('rcard');
+      const rows=[['Nap',rep.napped?`Yes — ${rep.napMins||'?'} min`:'No nap'],['Lunch',`${rep.lunchTime||'—'} · ${rep.lunchPortion}`],['Bowel',`${rep.bmCount}${rep.bmTime?' · '+rep.bmTime:''}`],['Updates',rep.notes||'—']];
+      rows.forEach(([k,v])=>{ const ri=div('ritem'); ri.appendChild(h('span',{class:'rk'},k)); ri.appendChild(h('span',{class:'rv'},v)); card.appendChild(ri); });
+      card.appendChild(h('span',{class:'stamp'},`Posted ${fmtDT(rep.updatedAt)}`));
+      pg.appendChild(card);
+    }
+  }
+  else if(pt==='weekly'){
+    const panel=div('panel');
+    const weeks=get('weekly')[ch.id]||[];
+    if(!weeks.length) panel.appendChild(p('empty','No weekly reports yet.'));
+    else weeks.forEach(w=>{ const wi=div('witem'); wi.appendChild(h('span',{class:'wtag'},w.week)); wi.appendChild(h('p',{},w.text)); wi.appendChild(h('span',{class:'stamp'},fmtDT(w.at))); panel.appendChild(wi); });
+    pg.appendChild(panel);
+  }
+  else if(pt==='announce'){
+    const panel=div('panel'); panel.appendChild(h('h3',{},'School announcements'));
+    const ann=get('ann');
+    if(!ann.length) panel.appendChild(p('empty','No announcements yet.'));
+    else ann.forEach(a=>{ const row=div('annrow'); row.appendChild(h('strong',{},a.title)); if(a.body) row.appendChild(h('p',{},a.body)); if(a.link&&a.linkLabel){ const lk=h('a',{href:a.link,target:'_blank',class:'ann-link'},a.linkLabel); row.appendChild(lk); } row.appendChild(h('span',{class:'stamp'},fmtDT(a.at))); panel.appendChild(row); });
+    pg.appendChild(panel);
+  }
+  else if(pt==='chat'){
+    const msgs=get('messages')[ch.id]||[];
+    const thread=div('thread');
+    const msgsDiv=div('msgs');
+    if(!msgs.length) msgsDiv.appendChild(p('empty','No messages yet 👋'));
+    msgs.forEach(m=>{ const b=div(`bubble${m.from===get('chatAs')?' mine':''}`); b.appendChild(h('span',{class:'bwho'},m.from==='teacher'?'Teacher':'Parent')); b.appendChild(h('p',{},m.text)); b.appendChild(h('span',{class:'btime'},fmtDT(m.at))); msgsDiv.appendChild(b); });
+    thread.appendChild(msgsDiv);
+    const compose=div('compose');
+    const inp=h('input',{class:'inp',placeholder:'Message…'});
+    const sendBtn=btn('pri sm','Send',()=>{
+      const txt=inp.value.trim(); if(!txt) return;
+      const ca=get('chatAs');
+      const cur=get('messages'); cur[ch.id]=[...(cur[ch.id]||[]),{id:uid(),from:ca,text:txt,at:new Date().toISOString()}];
+      persist('kc:messages',cur,'messages');
+      if(ca==='teacher') notify(ch.id,'message',`Teacher: "${txt.slice(0,50)}"`);
+      inp.value=''; render();
+    });
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') sendBtn.click(); });
+    compose.appendChild(inp); compose.appendChild(sendBtn);
+    thread.appendChild(compose);
+    pg.appendChild(thread);
+  }
+  else if(pt==='mc'){
+    const panel=div('panel');
+    panel.appendChild(h('h3',{},'Submit absence / MC'));
+    let mf={from:'',to:'',reason:''};
+    const r2=div('row2 mt');
+    const ff=div('field'); ff.appendChild(h('label',{},'From')); const fi=h('input',{class:'inp',type:'date'}); fi.addEventListener('input',()=>mf.from=fi.value); ff.appendChild(fi); r2.appendChild(ff);
+    const tf=div('field'); tf.appendChild(h('label',{},'To')); const ti=h('input',{class:'inp',type:'date'}); ti.addEventListener('input',()=>mf.to=ti.value); tf.appendChild(ti); r2.appendChild(tf);
+    panel.appendChild(r2);
+    const rf=div('field'); rf.appendChild(h('label',{},'Reason')); const ri=h('input',{class:'inp',placeholder:'e.g. fever, doctor visit'}); ri.addEventListener('input',()=>mf.reason=ri.value); rf.appendChild(ri); panel.appendChild(rf);
+    panel.appendChild(btn('pri full','Submit',()=>{
+      if(!mf.from||!mf.reason) return;
+      const cur=get('mc'); cur[ch.id]=[{...mf,at:new Date().toISOString()},...(cur[ch.id]||[])];
+      persist('kc:mc',cur,'mc'); mf={from:'',to:'',reason:''}; render();
+    }));
+    (get('mc')[ch.id]||[]).forEach(m=>{ const row=div('mcrow'); row.appendChild(h('strong',{},`${m.from}${m.to?' → '+m.to:''}`)); row.appendChild(h('span',{},m.reason)); row.appendChild(h('span',{class:'stamp'},fmtDT(m.at))); panel.appendChild(row); });
+    pg.appendChild(panel);
+  }
+  return pg;
+}
+
+function renderTeacher(){
+  const pg=div('page');
+  const TTABS=[['queue','Check-in'],['reports','Reports'],['comms','Chat'],['announce','Announce'],['dash','Dashboard']];
+  const tnav=div('tnav');
+  TTABS.forEach(([t,lbl])=>{ const b=h('button',{class:get('tab')===t?'on':''},lbl); b.addEventListener('click',()=>{ set('tab',t); render(); }); tnav.appendChild(b); });
+  pg.appendChild(tnav);
+
+  const tab=get('tab');
+  const date=today();
+  const dayRecs=get('records')[date]||{};
+
+  if(tab==='queue'){
+    CHILDREN.forEach(ch=>{
+      const st=childState(ch.id);
+      const todayH=(get('health')[ch.id]||[]).filter(h=>h.at?.slice(0,10)===date);
+      const worst=todayH.some(h=>h.severity==='urgent')?'urgent':todayH.some(h=>h.severity==='pickup')?'pickup':todayH.length?'monitor':null;
+      const row=div('qrow');
+      row.appendChild(avEl(ch.name));
+      const info=div('qinfo');
+      const nameEl=h('strong',{},ch.name);
+      const subEl=h('span',{class:'sub'});
+      subEl.appendChild(document.createTextNode(`${ch.cls} · ${st==='in'?'In':st==='out'?'Done':'—'}`));
+      if(worst){ const fl=h('span',{class:`hflag ${worst}`},worst==='urgent'?'⚠ Urgent':worst==='pickup'?'⚠ Pickup':'● Watch'); subEl.appendChild(fl); }
+      info.appendChild(nameEl); info.appendChild(subEl); row.appendChild(info);
+      const acts=div('qacts');
+      if(st==='away') acts.appendChild(btn('pri sm','In',()=>{ showConfirmModal(ch.id,'in'); }));
+      else if(st==='in') acts.appendChild(btn('sec sm','Out',()=>{ showConfirmModal(ch.id,'out'); }));
+      else acts.appendChild(h('span',{class:'sub sm'},'✓'));
+      acts.appendChild(lbtn('sm','🩺',()=>showSymptomModal(ch.id,'duringday')));
+      row.appendChild(acts); pg.appendChild(row);
+    });
+  }
+  else if(tab==='reports'){
+    CHILDREN.forEach(ch=>{
+      const done=(get('reports')[date]||{})[ch.id];
+      const row=div('qrow');
+      row.appendChild(avEl(ch.name));
+      const info=div('qinfo'); info.appendChild(h('strong',{},ch.name)); info.appendChild(h('span',{class:'sub'},done?'Sent ✓':'Not filled'));
+      row.appendChild(info);
+      row.appendChild(btn(done?'ghost sm':'pri sm',done?'Edit':'Fill',()=>showReportModal(ch.id)));
+      pg.appendChild(row);
+    });
+  }
+  else if(tab==='comms'){
+    CHILDREN.forEach(ch=>{
+      const last=(get('messages')[ch.id]||[]).slice(-1)[0];
+      const row=div('qrow'); row.style.cursor='pointer';
+      row.addEventListener('click',()=>{ set('role','parent'); set('activeChild',ch); set('pTab','chat'); set('chatAs','teacher'); render(); });
+      row.appendChild(avEl(ch.name));
+      const info=div('qinfo'); info.appendChild(h('strong',{},ch.name)); info.appendChild(h('span',{class:'sub'},last?`"${last.text.slice(0,35)}…"`:'No messages'));
+      row.appendChild(info);
+      row.appendChild(h('span',{class:'sub'},'›'));
+      pg.appendChild(row);
+    });
+  }
+  else if(tab==='announce'){
+    const panel=div('panel');
+    panel.appendChild(h('h3',{},'Post an announcement'));
+    let af={title:'',body:''};
+    const tf=div('field'); tf.appendChild(h('label',{},'Title')); const ti=h('input',{class:'inp',placeholder:'e.g. Sports Day next Friday'}); ti.addEventListener('input',()=>af.title=ti.value); tf.appendChild(ti); panel.appendChild(tf);
+    const bf=div('field'); bf.appendChild(h('label',{},'Details')); const bi=h('textarea',{class:'inp',rows:'3',placeholder:'Full details…'}); bi.addEventListener('input',()=>af.body=bi.value); bf.appendChild(bi); panel.appendChild(bf);
+    panel.appendChild(btn('pri full','Post to all parents',()=>{
+      if(!af.title.trim()&&!af.body.trim()) return;
+      const cur=get('ann'); cur.unshift({id:uid(),...af,at:new Date().toISOString()});
+      persist('kc:ann',cur,'ann'); af={title:'',body:''}; render();
+    }));
+    const cur=get('ann');
+    if(cur.length){ const sep=div(''); sep.style.marginTop='16px'; panel.appendChild(sep); }
+    cur.forEach(a=>{ const row=div('annrow'); row.appendChild(h('strong',{},a.title)); if(a.body) row.appendChild(h('p',{},a.body.slice(0,100)+(a.body.length>100?'…':''))); row.appendChild(h('span',{class:'stamp'},fmtDT(a.at))); panel.appendChild(row); });
+    pg.appendChild(panel);
+  }
+  else if(tab==='dash'){
+    const present=Object.values(dayRecs).filter(r=>r.inAt&&!r.outAt).length;
+    const gone=Object.values(dayRecs).filter(r=>r.outAt).length;
+    const statrow=div('statrow');
+    [[present,'Here'],[CHILDREN.length-present-gone,'Expected'],[gone,'Left']].forEach(([n,lbl])=>{
+      const sc=div('scard'); sc.appendChild(h('span',{class:'snum'},String(n))); sc.appendChild(h('span',{class:'slbl'},lbl)); statrow.appendChild(sc);
+    });
+    pg.appendChild(statrow);
+    pg.appendChild(h('h3',{},"Today's log"));
+    const table=div('logtable');
+    const headRow=div('logrow head');
+    ['Child','In','Temp','Out','By'].forEach(lbl=>headRow.appendChild(h('span',{},lbl)));
+    table.appendChild(headRow);
+    CHILDREN.forEach(ch=>{
+      const r=dayRecs[ch.id]||{};
+      if(!r.inAt&&!r.outAt) return;
+      const row=div('logrow');
+      row.appendChild(h('span',{class:'logname'},ch.name.split(' ')[0]));
+      row.appendChild(h('span',{},fmt(r.inAt)));
+      row.appendChild(h('span',{class:r.temp>=37.8?'hot':''},r.temp?`${r.temp}°`:'—'));
+      row.appendChild(h('span',{},fmt(r.outAt)));
+      row.appendChild(h('span',{class:(r.outBy||r.inBy||'').startsWith('Other')?'hot':''},r.outBy||r.inBy||'—'));
+      table.appendChild(row);
+    });
+    pg.appendChild(table);
+  }
+  return pg;
+}
+
+// ── Header ────────────────────────────────────────────────────────
+function renderHeader(){
+  const hdr=div('hdr');
+  const left=div('hdr-left');
+  left.appendChild(div('logo','🌿'));
+  const titles=div('');
+  titles.appendChild(h('h1',{},'Little Village'));
+  titles.appendChild(p('sub',new Date().toLocaleDateString([],{weekday:'short',day:'numeric',month:'short'})));
+  left.appendChild(titles); hdr.appendChild(left);
+  const sw=div('rolesw');
+  const pb=h('button',{class:get('role')==='parent'?'on':''},'Parent');
+  const tb=h('button',{class:get('role')==='caregiver'?'on':''},'Teacher');
+  pb.addEventListener('click',()=>{ set('role','parent'); set('activeChild',null); set('chatAs','parent'); render(); });
+  tb.addEventListener('click',()=>{ set('role','caregiver'); set('tab','queue'); render(); });
+  sw.appendChild(pb); sw.appendChild(tb); hdr.appendChild(sw);
+  return hdr;
+}
+
+// ── Main render ───────────────────────────────────────────────────
+function render(){
+  const app=document.getElementById('app');
+  app.innerHTML='';
+  app.appendChild(renderHeader());
+  const role=get('role');
+  if(role==='parent'){
+    app.appendChild(get('activeChild') ? renderParentDetail() : renderParentHome());
+  } else {
+    app.appendChild(renderTeacher());
+  }
+}
+
+// ── Boot ──────────────────────────────────────────────────────────
+function boot(){
+  try {
+    seedDemo();
+    set('records',  store.get('kc:records',{}));
+    set('reports',  store.get('kc:reports',{}));
+    set('weekly',   store.get('kc:weekly',{}));
+    set('messages', store.get('kc:messages',{}));
+    set('mc',       store.get('kc:mc',{}));
+    set('notifs',   store.get('kc:notifs',{}));
+    set('health',   store.get('kc:health',{}));
+    set('ann',      store.get('kc:ann',[]));
+    render();
+  } catch(err) {
+    const app=document.getElementById('app');
+    app.innerHTML = '<div style="padding:30px;font-family:sans-serif;color:#c0503a;">'
+      + '<h2 style="margin-bottom:12px;">Demo failed to load</h2>'
+      + '<p style="font-size:13px;color:#555;">Please try opening this link in Safari or Chrome directly '
+      + '(not inside a file preview / Quick Look). If the problem continues, error details below:</p>'
+      + '<pre style="margin-top:14px;font-size:11px;white-space:pre-wrap;background:#fbeae6;padding:12px;border-radius:8px;">'
+      + (err && err.stack ? err.stack : String(err)) + '</pre></div>';
+    console.error('KinderCheck demo error:', err);
+  }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
+}
+</script>
+</body>
+</html>
